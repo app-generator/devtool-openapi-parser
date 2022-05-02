@@ -1,0 +1,36 @@
+{
+    "openapi": "3.0.0",
+    "title": "My API",
+    "version": "1.0.0",
+    "description": "an OpenAPI REST descriptor",
+    "models": {
+        "Price": {
+            "type": "object",
+            "properties": {
+                "ID": {
+                    "type": "number"
+                },
+                "usd": {
+                    "type": "number"
+                },
+                "euro": {
+                    "type": "number"
+                }
+            }
+        },
+        "Product": {
+            "type": "object",
+            "properties": {
+                "ID": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "Price"
+                }
+            }
+        }
+    }    
+}
