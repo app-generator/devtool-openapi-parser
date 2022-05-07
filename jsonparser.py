@@ -14,11 +14,6 @@ iteritems  = operator.methodcaller("items")
 unicode    = str
 basestring = str
 
-# > Patch: No Global vars
-# input_filename= sys.argv[1] 
-# ouput_filename= sys.argv[2] 
-
-# print(sys.argv[1] , sys.argv[2] )
 
 #%%----------------------------------------------------------------
 def refHandler(content):
@@ -126,130 +121,41 @@ class DesiredClass(object):
         self.title       = replacedRefDict['info']['title']
         self.version     = replacedRefDict['info']['version']
         
-        # > Patch don't PP here (leave the PP commented)
-        # pprint(self.__dict__)
 
-    # > Patch: this helper should return a VALID JSON
-    # The return value should be loaded by json.loads() 
     def return_json(self):
-
-        return replacedRefDict
+        return self.__dict__
 
     def save_json(self, aOutputFile):
 
         with open(aOutputFile, 'w') as outfile:                 
                     json.dump(self.__dict__, outfile)
 
-    # > Patch: Return names for all defined models
     def get_models(self):
+        all_models = list(self.__dict__['models'].keys())
+        return list(self.__dict__['models'].keys())
 
-        models = []
-
-        # Processing here
-
-        # If we have a definition like below, get_models() should return this list:
-        # ['Price', 'Product']
-
-        '''
-		"schemas": {
-			"Price": {
-				"type": "object",
-				"properties": {
-					"ID": {
-						"type": "number"
-					},
-					"usd": {
-						"type": "number"
-					},
-					"euro": {
-						"type": "number"
-					}
-				}
-			},
-			"Product": {
-				"type": "object",
-				"properties": {
-					"ID": {
-						"type": "number"
-					},
-					"name": {
-						"type": "string"
-					},
-					"price": {
-						"$ref": "#/components/schemas/Price"
-					}
-				}
-			}
-		}
-        '''    
-        
-        return models
-
-    # > Patch: Get Model data 
     def get_model_data(self, aModelName):
+        all_models= self.get_models()
 
-        model_data = {}
+        if aModelName not in all_models:
+            return('your item is not in models.. TRY AGAIN')
+            
+        else:
+            return (self.__dict__['models'].get(aModelName))['properties']
 
-        # Processing Here 
 
-        # If we have a definition like below, get_model_data('Product') will return a DICT:
-        # { 'ID'    : 'number' 
-        #   'name'  : 'string'
-        #   'price' : 'object'       
-        # }
-        # 
-        # Sample 2: get_model_data('Price') will return:
-        # { 'ID'    : 'number' 
-        #   'usd'   : 'number'
-        #   'euro'  : 'number'       
-        # }
-
-        '''
-		"schemas": {
-			"Price": {
-				"type": "object",
-				"properties": {
-					"ID": {
-						"type": "number"
-					},
-					"usd": {
-						"type": "number"
-					},
-					"euro": {
-						"type": "number"
-					}
-				}
-			},
-			"Product": {
-				"type": "object",
-				"properties": {
-					"ID": {
-						"type": "number"
-					},
-					"name": {
-						"type": "string"
-					},
-					"price": {
-						"$ref": "#/components/schemas/Price"
-					}
-				}
-			}
-		}
-        ''' 
-        
-        return model_data
 
 if __name__ == "__main__":
     
-    # > Patch: validate input (at least 1 arg)
     input_filename = sys.argv[1]
-
-    # > Patch: Output is optional
-    # If not specified, the name will be generated from input. Sample:
-    # Input  : product.json
-    # Output : product-out.json 
-    # '-out' is appended to the file name
-    #ouput_filename = sys.argv[2]
+    if len(sys.argv)==3:
+        ouput_filename = sys.argv[2] 
+    elif len(sys.argv)==2:
+        ouput_filename = input_filename.replace('.json' , '-out.json')
+    else:
+        print('Please enter at most two inputs...')
+        sys.exit()
+        
 
     source        = open(f'{input_filename}')
     source        = json.load(source)
@@ -266,12 +172,23 @@ if __name__ == "__main__":
     # OOP Representation
     openAPI = DesiredClass(replacedRefDict)
     
-    # > Patch: return_json() should return a VALID JSon
+    print(openAPI.get_model_data('Product'))
+    print(openAPI.get_model_data('Price'))
+    
+    print(openAPI.get_model_data('Something that is not in models!'))
+    
+    
+    
+    
+    
     out_json = openAPI.return_json()
+    print(out_json)
+    openAPI.save_json(ouput_filename)
 
-    # > Patch: This call fails
-    # json.loads( out_json )
 
-    print ( out_json['info']['title'] )
+    #The out_json does not have info as attribute 
+    # it has title ( becase the desired output was in that form)
+    print ( out_json['title'] )
+    
 
     print ( 'Models -> ' + str( openAPI.get_models() ) )
