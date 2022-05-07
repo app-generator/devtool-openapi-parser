@@ -6,25 +6,23 @@ import json
 import operator
 import re
 import sys
-import warnings
-from urllib import parse as urlparse
-from urllib.parse import unquote
-from urllib.request import urlopen
 from glom import glom
 from collections import OrderedDict
 from pprint import pprint
 
-iteritems = operator.methodcaller("items")
-unicode = str
+iteritems  = operator.methodcaller("items")
+unicode    = str
 basestring = str
-input_filename= sys.argv[1] 
-ouput_filename= sys.argv[2] 
 
-print(sys.argv[1] , sys.argv[2] )
+# > Patch: No Global vars
+# input_filename= sys.argv[1] 
+# ouput_filename= sys.argv[2] 
+
+# print(sys.argv[1] , sys.argv[2] )
+
 #%%----------------------------------------------------------------
 def refHandler(content):
     return content.split('/')[-1]
-
 
 def getKeysofanObj(object, prev_key = None, keys = []):
     if type(object) != type({}):
@@ -42,7 +40,6 @@ def getKeysofanObj(object, prev_key = None, keys = []):
     return new_keys
 
 
-
 def get_keys(d, curr_key=[]):
     for k, v in d.items():
         
@@ -52,9 +49,7 @@ def get_keys(d, curr_key=[]):
             for i in v:
                 yield from get_keys(i, curr_key + [k])
         else:
-            yield '.'.join(curr_key + [k])
-            
-
+            yield '.'.join(curr_key + [k]) 
 
 def dict_replace_value(d, old, new):
     x = {}
@@ -67,9 +62,6 @@ def dict_replace_value(d, old, new):
             v = v.replace(old, new)
         x[k] = v
     return x
-
-
-
 
 def replace_keys(data_dict, key_dict):
     new_dict = { }
@@ -125,38 +117,161 @@ def walk_json(obj, key_transform):
 
 #%%----------------------------------------------------------------
 class DesiredClass(object):
+
     def __init__(self, jsonfromsource):
 
         self.description = replacedRefDict['info']['description']
-        self.models = replacedRefDict['components']['schemas']
-        self.openapi = replacedRefDict['openapi']
-        self.title = replacedRefDict['info']['title']
-        self.version = replacedRefDict['info']['version']
+        self.models      = replacedRefDict['components']['schemas']
+        self.openapi     = replacedRefDict['openapi']
+        self.title       = replacedRefDict['info']['title']
+        self.version     = replacedRefDict['info']['version']
         
-        pprint(self.__dict__)
-        with open(f'{ouput_filename}', 'w') as outfile:
-            json.dump(self.__dict__, outfile)
-        
+        # > Patch don't PP here (leave the PP commented)
+        # pprint(self.__dict__)
+
+    # > Patch: this helper should return a VALID JSON
+    # The return value should be loaded by json.loads() 
     def return_json(self):
+
         return replacedRefDict
+
+    def save_json(self, aOutputFile):
+
+        with open(aOutputFile, 'w') as outfile:                 
+                    json.dump(self.__dict__, outfile)
+
+    # > Patch: Return names for all defined models
+    def get_models(self):
+
+        models = []
+
+        # Processing here
+
+        # If we have a definition like below, get_models() should return this list:
+        # ['Price', 'Product']
+
+        '''
+		"schemas": {
+			"Price": {
+				"type": "object",
+				"properties": {
+					"ID": {
+						"type": "number"
+					},
+					"usd": {
+						"type": "number"
+					},
+					"euro": {
+						"type": "number"
+					}
+				}
+			},
+			"Product": {
+				"type": "object",
+				"properties": {
+					"ID": {
+						"type": "number"
+					},
+					"name": {
+						"type": "string"
+					},
+					"price": {
+						"$ref": "#/components/schemas/Price"
+					}
+				}
+			}
+		}
+        '''    
+        
+        return models
+
+    # > Patch: Get Model data 
+    def get_model_data(self, aModelName):
+
+        model_data = {}
+
+        # Processing Here 
+
+        # If we have a definition like below, get_model_data('Product') will return a DICT:
+        # { 'ID'    : 'number' 
+        #   'name'  : 'string'
+        #   'price' : 'object'       
+        # }
+        # 
+        # Sample 2: get_model_data('Price') will return:
+        # { 'ID'    : 'number' 
+        #   'usd'   : 'number'
+        #   'euro'  : 'number'       
+        # }
+
+        '''
+		"schemas": {
+			"Price": {
+				"type": "object",
+				"properties": {
+					"ID": {
+						"type": "number"
+					},
+					"usd": {
+						"type": "number"
+					},
+					"euro": {
+						"type": "number"
+					}
+				}
+			},
+			"Product": {
+				"type": "object",
+				"properties": {
+					"ID": {
+						"type": "number"
+					},
+					"name": {
+						"type": "string"
+					},
+					"price": {
+						"$ref": "#/components/schemas/Price"
+					}
+				}
+			}
+		}
+        ''' 
+        
+        return model_data
 
 if __name__ == "__main__":
     
-    source = open(f'{input_filename}')
-    source= json.load(source)
-    allthekeys = [*get_keys(source)]
-    alltheValues= [ glom(source, item) for item in allthekeys]
+    # > Patch: validate input (at least 1 arg)
+    input_filename = sys.argv[1]
+
+    # > Patch: Output is optional
+    # If not specified, the name will be generated from input. Sample:
+    # Input  : product.json
+    # Output : product-out.json 
+    # '-out' is appended to the file name
+    #ouput_filename = sys.argv[2]
+
+    source        = open(f'{input_filename}')
+    source        = json.load(source)
+    allthekeys    = [*get_keys(source)]
+    alltheValues  = [ glom(source, item) for item in allthekeys]
     listofRefitem = [item for item in alltheValues if item.find('#')!=-1]
 
     for item in listofRefitem:
         source= dict_replace_value(source, item , item.split('/')[-1])
-    template_ = { '$ref' : 'type'}
+
+    template_       = { '$ref' : 'type'}
     replacedRefDict = replace_keys(source, template_)
-    u = DesiredClass(replacedRefDict).return_json()
 
+    # OOP Representation
+    openAPI = DesiredClass(replacedRefDict)
+    
+    # > Patch: return_json() should return a VALID JSon
+    out_json = openAPI.return_json()
 
+    # > Patch: This call fails
+    # json.loads( out_json )
 
+    print ( out_json['info']['title'] )
 
-
-
-
+    print ( 'Models -> ' + str( openAPI.get_models() ) )
