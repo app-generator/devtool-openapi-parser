@@ -14,7 +14,6 @@ iteritems  = operator.methodcaller("items")
 unicode    = str
 basestring = str
 
-
 #%%----------------------------------------------------------------
 def refHandler(content):
     return content.split('/')[-1]
@@ -33,7 +32,6 @@ def getKeysofanObj(object, prev_key = None, keys = []):
             new_key = k
         new_keys.extend(getKeys(v, new_key, []))
     return new_keys
-
 
 def get_keys(d, curr_key=[]):
     for k, v in d.items():
@@ -76,8 +74,6 @@ def replace_keys(data_dict, key_dict):
         return new_dict
     return new_dict
 
-
-
 def walk_json(obj, key_transform):
 
     assert isinstance(obj, dict)
@@ -111,51 +107,72 @@ def walk_json(obj, key_transform):
             
 
 #%%----------------------------------------------------------------
-class DesiredClass(object):
+class OAJsonParser(object):
 
     def __init__(self, jsonfromsource):
 
-        self.description = replacedRefDict['info']['description']
-        self.models      = replacedRefDict['components']['schemas']
         self.openapi     = replacedRefDict['openapi']
         self.title       = replacedRefDict['info']['title']
         self.version     = replacedRefDict['info']['version']
-        
+        self.description = replacedRefDict['info']['description']
+        self.models      = replacedRefDict['components']['schemas']
 
-    def return_json(self):
+    # Return Object as dict 
+    def get_dict(self):
         return self.__dict__
 
-    def save_json(self, aOutputFile):
+    # Return Object as JSON
+    def get_json(self):
+        return json.loads( json.dumps( self.get_dict() ) ) 
 
+    def save_json(self, aOutputFile):
         with open(aOutputFile, 'w') as outfile:                 
-                    json.dump(self.__dict__, outfile)
+                    json.dump(self.get_dict() , outfile)
 
     def get_models(self):
         all_models = list(self.__dict__['models'].keys())
         return list(self.__dict__['models'].keys())
 
-    def get_model_data(self, aModelName):
+    def get_model_dict(self, aModelName):
+
         all_models= self.get_models()
 
-        if aModelName not in all_models:
-            return('your item is not in models.. TRY AGAIN')
-            
-        else:
-            return (self.__dict__['models'].get(aModelName))['properties']
+        if aModelName in all_models:
+            return (self.__dict__['models'].get(aModelName))['properties'] 
 
+        return None
 
+    def get_model_json(self, aModelName):
 
+        model = self.get_model_dict( aModelName )
+
+        if not model:
+            return None        
+
+        return json.loads( json.dumps( model ) )
+
+# Entry Point
 if __name__ == "__main__":
     
+    # Count Arguments
+    args = len(sys.argv)
+
+    # Unsupported
+    if args < 2 or args > 3:
+        print('Usage: python ./this_script.py OpenAPI.json <OUT_FILE> (optional)') 
+        sys.exit()        
+
     input_filename = sys.argv[1]
-    if len(sys.argv)==3:
+
+    if args == 3:
         ouput_filename = sys.argv[2] 
-    elif len(sys.argv)==2:
+
+    elif args == 2:
         ouput_filename = input_filename.replace('.json' , '-out.json')
+
     else:
-        print('Please enter at most two inputs...')
-        sys.exit()
-        
+        print('Usage: python ./this_script.py OpenAPI.json <OUT_FILE> (optional)') 
+        sys.exit()        
 
     source        = open(f'{input_filename}')
     source        = json.load(source)
@@ -170,25 +187,16 @@ if __name__ == "__main__":
     replacedRefDict = replace_keys(source, template_)
 
     # OOP Representation
-    openAPI = DesiredClass(replacedRefDict)
-    
-    print(openAPI.get_model_data('Product'))
-    print(openAPI.get_model_data('Price'))
-    
-    print(openAPI.get_model_data('Something that is not in models!'))
-    
-    
-    
-    
-    
-    out_json = openAPI.return_json()
-    print(out_json)
-    openAPI.save_json(ouput_filename)
+    openAPI_schema = OAJsonParser(replacedRefDict)
 
+    models = openAPI_schema.get_models()
 
-    #The out_json does not have info as attribute 
-    # it has title ( becase the desired output was in that form)
-    print ( out_json['title'] )
+    print ( 'Models -> ' + str( models ) )
     
+    for m in models:
 
-    print ( 'Models -> ' + str( openAPI.get_models() ) )
+        model      = openAPI_schema.get_model_dict( m ) 
+        model_json = openAPI_schema.get_model_json( m ) 
+
+        print ( '[DICT ' + m + '] -> ' + str ( model      ) )
+        print ( '[JSON ' + m + '] -> ' + str ( model_json ) )
