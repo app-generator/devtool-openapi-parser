@@ -16,11 +16,15 @@ $ git clone https://github.com/app-generator/devtool-openapi-parser.git
 $ cd devtool-openapi-parser
 ```
 
+<br />
+
 > **Step 2** - Install dependencies
 
 ```bash
 $ pip install -r requirements.txt
 ```
+
+<br />
 
 > **Step 3** - Parse an OpenAPI definition 
 
