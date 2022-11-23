@@ -1,4 +1,4 @@
-# OpenAPI Parser
+# [OpenAPI Parser](https://github.com/app-generator/devtool-openapi-parser)
 
 Tool to extract relevant information from an OpenAPI descriptor. The information can be used to generate code (helpers, business logic or a database schema. 
 
@@ -30,9 +30,5 @@ $ python.exe .\jsonparser.py .\io-samples\products.json
 
 <br />
 
-> For [support](https://appseed.us/support/), please contact **AppSeed**. 
-
-<br />
-
 --- 
-OpenAPI Parser - Developers Tool provided by **AppSeed**
+[OpenAPI Parser](https://github.com/app-generator/devtool-openapi-parser) - Developers Tool provided by **AppSeed**
