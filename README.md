@@ -2,8 +2,6 @@
 
 Tool to extract relevant information from an OpenAPI descriptor. The information can be used to generate code (helpers, business logic or a database schema. 
 
-> Note: Closed-source tool, **free for AppSeed [PRO Users](https://appseed.us/terms/)**
-
 - 👉 Free [support](https://appseed.us/support/) via Email and [Discord](https://discord.gg/fZC6hup)
 - 👉 More [Developer Tools](https://appseed.us/developer-tools/) - provided by AppSeed
 
@@ -14,7 +12,7 @@ Tool to extract relevant information from an OpenAPI descriptor. The information
 > **Step 1** - Download/clone the source code
 
 ```bash
-$ unzip devtool-openapi-parser.zip
+$ git clone https://github.com/app-generator/devtool-openapi-parser.git
 $ cd devtool-openapi-parser
 ```
 
