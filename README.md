@@ -34,9 +34,9 @@ $ python.exe .\jsonparser.py .\io-samples\products.json
 
 <br />
 
-> ✅ Create your own **OpenAPI** defintion:
+> ✅ Create your own defintion using [OpenApi Generator](https://appseed.us/generator/openapi/), `free tool`
 
-- 👉 [OpenApi Generator](https://appseed.us/generator/openapi/) - `visual`, **in-browser** tool
+[![OpenApi Generator - Free service provided by AppSeed.](https://user-images.githubusercontent.com/51070104/203809573-40fdbcad-edf7-4309-8fb7-343b714dc28a.png)](https://appseed.us/generator/openapi/) 
 
 <br />
 
