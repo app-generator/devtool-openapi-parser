@@ -1,8 +1,8 @@
 # [OpenAPI Parser](https://github.com/app-generator/devtool-openapi-parser)
 
-Tool to extract relevant information from an OpenAPI descriptor. The information can be used to generate code (helpers, business logic or a database schema. 
+Tool that extracts relevant information from an OpenAPI descriptor. The information can be used to generate code (helpers, business logic or a database schema).
 
-- 👉 Free [support](https://appseed.us/support/) via Email and [Discord](https://discord.gg/fZC6hup)
+- 👉 Free [support](https://appseed.us/support/) via `Email` and `Discord`
 - 👉 More [Developer Tools](https://appseed.us/developer-tools/) - provided by AppSeed
 
 <br />
