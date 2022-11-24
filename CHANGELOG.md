@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.3] 2022-11-23
+### Changes
+
+- DOCS Update (Readme)
+
 ## [0.0.2] 2022-11-23
 ### Improvements
 
