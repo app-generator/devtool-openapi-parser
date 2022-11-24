@@ -41,4 +41,4 @@ $ python.exe .\jsonparser.py .\io-samples\products.json
 <br />
 
 --- 
-[OpenAPI Parser](https://github.com/app-generator/devtool-openapi-parser) - Developers Tool provided by **AppSeed**
+[OpenAPI Parser](https://github.com/app-generator/devtool-openapi-parser) - **Developers Tool** provided by **[AppSeed](https://appseed.us/)** 
