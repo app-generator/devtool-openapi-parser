@@ -1,48 +1,50 @@
-
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-import requests
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 import json
 import operator
-import re
 import sys
 from glom import glom
-from collections import OrderedDict
-from pprint import pprint
 
-iteritems  = operator.methodcaller("items")
-unicode    = str
+iteritems = operator.methodcaller("items")
+unicode = str
 basestring = str
 
-#%%----------------------------------------------------------------
-def refHandler(content):
+
+# %%----------------------------------------------------------------
+def ref_handler(content):
     return content.split('/')[-1]
 
-def getKeysofanObj(object, prev_key = None, keys = []):
-    if type(object) != type({}):
-        keys.append(prev_key)
-        return keys
-    new_keys = []
-    for k, v in object.items():
-        if prev_key != None:
-            if k.find('ref')==1 :
-                print(k , v )
-            new_key = "{}.{}".format(prev_key, k)
-        else:
-            new_key = k
-        new_keys.extend(getKeys(v, new_key, []))
-    return new_keys
 
-def get_keys(d, curr_key=[]):
+def get_keys(d, curr_key=None):
+    if curr_key is None:
+        curr_key = []
     for k, v in d.items():
-        
+
         if isinstance(v, dict):
             yield from get_keys(v, curr_key + [k])
         elif isinstance(v, list):
             for i in v:
                 yield from get_keys(i, curr_key + [k])
         else:
-            yield '.'.join(curr_key + [k]) 
+            yield '.'.join(curr_key + [k])
+
+
+def get_keys_of_an_obj(object, prev_key=None, keys=None):
+    if keys is None:
+        keys = []
+    if type(object) != type({}):
+        keys.append(prev_key)
+        return keys
+    new_keys = []
+    for k, v in object.items():
+        if prev_key != None:
+            if k.find('ref') == 1:
+                print(k, v)
+            new_key = "{}.{}".format(prev_key, k)
+        else:
+            new_key = k
+        new_keys.extend(get_keys(v, new_key + []))
+    return new_keys
+
 
 def dict_replace_value(d, old, new):
     x = {}
@@ -50,14 +52,15 @@ def dict_replace_value(d, old, new):
         if isinstance(v, dict):
             v = dict_replace_value(v, old, new)
         elif isinstance(v, list):
-            v = list_replace_value(v, old, new)
+            v = dict_replace_value(v, old, new)
         elif isinstance(v, str):
             v = v.replace(old, new)
         x[k] = v
     return x
 
+
 def replace_keys(data_dict, key_dict):
-    new_dict = { }
+    new_dict = {}
     if isinstance(data_dict, list):
         dict_value_list = list()
         for inner_dict in data_dict:
@@ -72,10 +75,9 @@ def replace_keys(data_dict, key_dict):
             else:
                 new_dict[new_key] = value
         return new_dict
-    return new_dict
+
 
 def walk_json(obj, key_transform):
-
     assert isinstance(obj, dict)
 
     def _walk_json(obj, new):
@@ -96,38 +98,38 @@ def walk_json(obj, key_transform):
                         for item in value:
                             _walk_json(item, new=new[new_key])
 
-                    else: 
+                    else:
                         new[new_key] = value
 
             elif isinstance(new, list):
                 new.append(_walk_json(obj, new={}))
 
-        else: 
+        else:
             new.append(obj)
-            
 
-#%%----------------------------------------------------------------
+
+# %%----------------------------------------------------------------
 class OAJsonParser(object):
 
     def __init__(self, jsonfromsource):
 
-        self.openapi     = replacedRefDict['openapi']
-        self.title       = replacedRefDict['info']['title']
-        self.version     = replacedRefDict['info']['version']
+        self.openapi = replacedRefDict['openapi']
+        self.title = replacedRefDict['info']['title']
+        self.version = replacedRefDict['info']['version']
         self.description = replacedRefDict['info']['description']
-        self.models      = replacedRefDict['components']['schemas']
+        self.models = replacedRefDict['components']['schemas']
 
-    # Return Object as dict 
+    # Return Object as dict
     def get_dict(self):
         return self.__dict__
 
     # Return Object as JSON
     def get_json(self):
-        return json.loads( json.dumps( self.get_dict() ) ) 
+        return json.loads(json.dumps(self.get_dict()))
 
     def save_json(self, aOutputFile):
-        with open(aOutputFile, 'w') as outfile:                 
-                    json.dump(self.get_dict() , outfile)
+        with open(aOutputFile, 'w') as outfile:
+            json.dump(self.get_dict(), outfile)
 
     def get_models(self):
         all_models = list(self.__dict__['models'].keys())
@@ -135,55 +137,56 @@ class OAJsonParser(object):
 
     def get_model_dict(self, aModelName):
 
-        all_models= self.get_models()
+        all_models = self.get_models()
 
         if aModelName in all_models:
-            return (self.__dict__['models'].get(aModelName))['properties'] 
+            return (self.__dict__['models'].get(aModelName))['properties']
 
         return None
 
     def get_model_json(self, aModelName):
 
-        model = self.get_model_dict( aModelName )
+        model = self.get_model_dict(aModelName)
 
         if not model:
-            return None        
+            return None
 
-        return json.loads( json.dumps( model ) )
+        return json.loads(json.dumps(model))
+
 
 # Entry Point
 if __name__ == "__main__":
-    
+
     # Count Arguments
     args = len(sys.argv)
 
     # Unsupported
     if args < 2 or args > 3:
-        print('Usage: python ./this_script.py OpenAPI.json <OUT_FILE> (optional)') 
-        sys.exit()        
+        print('Usage: python ./this_script.py OpenAPI.json <OUT_FILE> (optional)')
+        sys.exit()
 
     input_filename = sys.argv[1]
 
     if args == 3:
-        ouput_filename = sys.argv[2] 
+        ouput_filename = sys.argv[2]
 
     elif args == 2:
-        ouput_filename = input_filename.replace('.json' , '-out.json')
+        ouput_filename = input_filename.replace('.json', '-out.json')
 
     else:
-        print('Usage: python ./this_script.py OpenAPI.json <OUT_FILE> (optional)') 
-        sys.exit()        
+        print('Usage: python ./this_script.py OpenAPI.json <OUT_FILE> (optional)')
+        sys.exit()
 
-    source        = open(f'{input_filename}')
-    source        = json.load(source)
-    allthekeys    = [*get_keys(source)]
-    alltheValues  = [ glom(source, item) for item in allthekeys]
-    listofRefitem = [item for item in alltheValues if item.find('#')!=-1]
+    source = open(f'{input_filename}')
+    source = json.load(source)
+    allthekeys = [*get_keys(source)]
+    alltheValues = [glom(source, item) for item in allthekeys]
+    listofRefitem = [item for item in alltheValues if item.find('#') != -1]
 
     for item in listofRefitem:
-        source= dict_replace_value(source, item , item.split('/')[-1])
+        source = dict_replace_value(source, item, item.split('/')[-1])
 
-    template_       = { '$ref' : 'type'}
+    template_ = {'$ref': 'type'}
     replacedRefDict = replace_keys(source, template_)
 
     # OOP Representation
@@ -191,12 +194,11 @@ if __name__ == "__main__":
 
     models = openAPI_schema.get_models()
 
-    print ( 'Models -> ' + str( models ) )
-    
+    print('Models -> ' + str(models))
+
     for m in models:
+        model = openAPI_schema.get_model_dict(m)
+        model_json = openAPI_schema.get_model_json(m)
 
-        model      = openAPI_schema.get_model_dict( m ) 
-        model_json = openAPI_schema.get_model_json( m ) 
-
-        print ( '[DICT ' + m + '] -> ' + str ( model      ) )
-        print ( '[JSON ' + m + '] -> ' + str ( model_json ) )
+        print('[DICT ' + m + '] -> ' + str(model))
+        print('[JSON ' + m + '] -> ' + str(model_json))
